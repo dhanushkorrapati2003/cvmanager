@@ -3,7 +3,7 @@ This is a CV manager where users can upload, search, view and delete the resumes
 
 ## Instructions for setup and things to take note of 
 ### 1. Setup your Database
-- I have used MySQL as the database, but you can use any database you want. But modify the DATABASES variable in the settings.py file accordingly. It varies from machine to machine, so connect it to your own database.
+- Modify the DATABASES variable in the settings.py file accordingly. I have used a local MYSQL database during development. It varies from machine to machine, so connect it to your own database.
 - After setting up the database, run **python manage.py makemigrations** to make the migrations and apply the migrations with **python manage.py migrate**. This will bring your database up to speed.
 ### 2. File structure
 **Note:** Only deviations from the standard django file structure are mentioned. Others are to be assumed as default.
