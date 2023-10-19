@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Add query field when the "Add Query" button is clicked
+            $("#add-query").click(function() {
+                var queryField = '<div class="row g-3 query-field">' +
+                    '<div class="col-md-6">' +
+                    '<input type="text" class="form-control" placeholder="Search..." name="query">' +
+                    '</div>' +
+                    '<div class="col-md-4">' +
+                    '<select class="form-select" name="query_type">' +
+                    '<option selected>Select Type</option>' +
+                    '<option value="first_name">First Name</option>' +
+                    '<option value="last_name">Last Name</option>' +
+                    '<option value="phone_number">Phone Number</option>' +
+                    '<option value="email">Email</option>' +
+                    '</select>' +
+                    '</div>' +
+                    '<div class="col-md-2">' +
+                    '<button type="button" class="btn btn-danger remove-query">Remove</button>' +
+                    '</div>' +
+                    '</div>';
+                $("#query-fields").append(queryField);
+            });
+
+            // Remove query field when the "Remove" button is clicked
+            $("#search-form").on("click", ".remove-query", function() {
+                $(this).closest(".query-field").remove();
+            });
+        });
+        // JavaScript to handle deletion of selected items
+        $(document).ready(function() {
+            $("#delete-selected").click(function() {
+                var selectedItems = [];
+
+                // Find all checked checkboxes
+                $(".result-checkbox:checked").each(function() {
+                    selectedItems.push($(this).val());
+                });
+
+                // Check if any items are selected
+                if (selectedItems.length > 0) {
+                    // Send a request to your server to delete the selected items
+                    $.ajax({
+                        url: "{% url 'delete-selected' %}",
+                        method: "POST",
+                        data: { selected_items: selectedItems },
+                        success: function(data) {
+                            // Handle successful deletion
+                            // Reload the page after deletion
+                            window.location.reload();
+                        },
+                        error: function() {
+                            alert("Error deleting selected items.");
+                        }
+                    });
+                } else {
+                    alert("No items selected for deletion.");
+                }
+            });
+        });
+
+    </script>
+    <style>
+        /* Style for the "Add Query" button */
+        #add-query {
+            margin-top: 10px;
+        }
+
+        /* Style for each query field */
+        .query-field {
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .person-link {
+            color: #007bff; /* Blue color for links */
+            text-decoration: none; /* Remove underline */
+            transition: color 0.2s; /* Smooth color transition on hover */
+            font-weight: bold; /* Make the text bold */
+            font-size: 16px; /* Adjust font size */
+            /* You can add more styles here to make it visually appealing */
+        }
+
+        .person-link:hover {
+            color: #0056b3; /* Darker blue on hover */
+            /* You can add more hover effects here */
+        }
+
+        .results-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .results-table th {
+            white-space: nowrap; /* Prevent text from wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Add ellipsis (...) for long text */
+        }
+
+        .results-table td {
+            word-wrap: break-word; /* Allow text to wrap within the cell */
+        }
+
+        .results-table td.skills {
+            max-width: 300px; /* Adjust the maximum width for the Skills column */
+        }
+        
+        /* Style for the "Delete" button */
+        #delete-selected {
+            margin-top: 10px;
+            background-color: #dc3545; /* Red color for the button */
+            border: none;
+            color: white;
+            padding: 10px 12px; /* Adjust padding as needed */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer;
+            transition: background-color 0.2s; /* Smooth color transition on hover */
+        }
+
+        #delete-selected:hover {
+            background-color: #c82333; /* Darker red on hover */
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'admin/admin_navbar.html' %}
+
+    <div class="container mt-5">
+        <h2 class="display-4">Resumes</h2>
+
+        <!-- Search Form -->
+        <form method="get" class="mb-4" id="search-form">
+            <div id="query-fields">
+                <div class="row g-3 query-field">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" placeholder="Search..." name="query">
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" name="query_type" >
+                            <option value="" disabled selected>Select Type</option>
+                            {% for choice in form.query_type.field.choices %}
+                                <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-success" id="add-query">Add Query</button>
+        </form>
+    
+        <!-- Search Results Table -->
+        <button type="button" class="btn btn-danger" id="delete-selected" >Delete Selected</button>
+
+        <h1></h1> <!-- Added a blank header to add space between the buttons and the table -->
+
+        <!-- Table to display search results -->
+        <div class="row">
+            <table class="table table-bordered table-condensed results-table">
+                <thead class="thead-light">
+                    <tr>
+                        <th class="text-center" style="width: 2%;"></th>
+                        <th class="text-center" style="width: 7%;">Name</th>
+                        <th class="text-center" style="width: 8%;">Phone</th>
+                        <th class="text-center" style="width: 12%;">Email</th>
+                        <th class="text-center" style="width: 35%;">Skills</th> <!-- Adjusted width for Skills -->
+                        <th class="text-center" style="width: 5%;">Resume</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for person in page %}
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" class="result-checkbox" value="{{ person.id }}">
+                        </td>
+                        <td class="text-center"><a href="{% url 'admin-detail-person' person.id %}" class="person-link">{{ person.first_name }} {{ person.last_name }}</a></td>
+                        <td class="text-center"><p>{{ person.phone_number }}</p></td>
+                        <td class="text-center">{{ person.email }}</td>
+                        <td class="text-center">{{ person.skills }}</td>
+                        <td class="text-center"><a href="{{ person.resume.url }}" class="btn btn-primary">Resume</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No results found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% for value in query_fields %}&query={{ value }}{% endfor %}{% for value in query_types %}&query_type={{ value }}{% endfor %}" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page.previous_page_number }}{% for value in query_fields %}&query={{ value }}{% endfor %}{% for value in query_types %}&query_type={{ value }}{% endfor %}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+        
+                {% for num in page.paginator.page_range %}
+                <li class="page-item {% if num == page.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}{% for value in query_fields %}&query={{ value }}{% endfor %}{% for value in query_types %}&query_type={{ value }}{% endfor %}" aria-label="Page {{ num }}">
+                        {{ num }}
+                    </a>
+                </li>
+                {% endfor %}
+        
+                {% if page.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page.next_page_number }}{% for value in query_fields %}&query={{ value }}{% endfor %}{% for value in query_types %}&query_type={{ value }}{% endfor %}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page.paginator.num_pages }}{% for value in query_fields %}&query={{ value }}{% endfor %}{% for value in query_types %}&query_type={{ value }}{% endfor %}" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Bootstrap JS and jQuery (if needed) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    <!-- Add any additional scripts here -->
+
+</body>
+</html>
