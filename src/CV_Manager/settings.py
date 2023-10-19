@@ -95,7 +95,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'cvmanager',
         'USER': 'root',
-        'PASSWORD': 'Korrapati@123',
+        'PASSWORD': 'temppassword',
         'HOST': 'localhost',
         'PORT': '3306',
     }
